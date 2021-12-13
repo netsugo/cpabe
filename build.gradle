@@ -15,10 +15,13 @@ repositories {
     maven {
         url 'https://www.jitpack.io'
     }
+    mavenCentral()
 }
 
 dependencies {
     implementation 'com.github.emilianobonassi:jpbc:2.0.0'
+
+    testImplementation 'junit:junit:4.13.1'
 }
 
 group = 'co.junwei.cpabe'

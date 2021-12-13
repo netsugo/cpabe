@@ -8,6 +8,7 @@ import java.io.OutputStream;
 
 public class Common {
 
+	@Deprecated
 	/* read byte[] from inputfile */
 	public static byte[] suckFile(String inputfile) throws IOException {
 		InputStream is = new FileInputStream(inputfile);
@@ -20,6 +21,7 @@ public class Common {
 		return content;
 	}
 
+	@Deprecated
 	/* write byte[] into outputfile */
 	public static void spitFile(String outputfile, byte[] b) throws IOException {
 		OutputStream os = new FileOutputStream(outputfile);
@@ -27,26 +29,19 @@ public class Common {
 		os.close();
 	}
 
-
-	public static void writeCpabeFile(String encfile,
-			byte[] cphBuf, byte[] aesBuf) throws IOException {
-		int i;
-		OutputStream os = new FileOutputStream(encfile);
-
+	public static void writeCpabe(byte[] cphBuf, byte[] aesBuf, OutputStream os) throws IOException {
 		/* write aes_buf */
-		for (i = 3; i >= 0; i--)
+		for (int i = 3; i >= 0; i--)
 			os.write(((aesBuf.length & (0xff << 8 * i)) >> 8 * i));
 		os.write(aesBuf);
 
 		/* write cph_buf */
-		for (i = 3; i >= 0; i--)
+		for (int i = 3; i >= 0; i--)
 			os.write(((cphBuf.length & (0xff << 8 * i)) >> 8 * i));
 		os.write(cphBuf);
-
-		os.close();
-
 	}
 
+	@Deprecated
 	public static byte[][] readCpabeFile(String encfile) throws IOException {
 		int i, len;
 		InputStream is = new FileInputStream(encfile);
