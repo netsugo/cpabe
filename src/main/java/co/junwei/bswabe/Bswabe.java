@@ -530,21 +530,13 @@ public class Bswabe {
 				n = Integer.parseInt(k_n[1]);
 
 				if (k < 1) {
-					System.out.println("error parsing " + s
-							+ ": trivially satisfied operator " + tok);
-					return null;
+					throw new BswabeException("error parsing " + s + ": trivially satisfied operator " + tok);
 				} else if (k > n) {
-					System.out.println("error parsing " + s
-							+ ": unsatisfiable operator " + tok);
-					return null;
+					throw new BswabeException("error parsing " + s + ": unsatisfiable operator " + tok);
 				} else if (n == 1) {
-					System.out.println("error parsing " + s
-							+ ": indentity operator " + tok);
-					return null;
+					throw new BswabeException("error parsing " + s + ": indentity operator " + tok);
 				} else if (n > stack.size()) {
-					System.out.println("error parsing " + s
-							+ ": stack underflow at " + tok);
-					return null;
+					throw new BswabeException("error parsing " + s + ": stack underflow at " + tok);
 				}
 
 				/* pop n things and fill in children */
@@ -560,12 +552,9 @@ public class Bswabe {
 		}
 
 		if (stack.size() > 1) {
-			System.out.println("error parsing " + s
-					+ ": extra node left on the stack");
-			return null;
+			throw new BswabeException("error parsing " + s + ": extra node left on the stack");
 		} else if (stack.size() < 1) {
-			System.out.println("error parsing " + s + ": empty policy");
-			return null;
+			throw new BswabeException("error parsing " + s + ": empty policy");
 		}
 
 		root = stack.get(0);

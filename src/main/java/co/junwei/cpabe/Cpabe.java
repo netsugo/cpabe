@@ -77,11 +77,9 @@ public class Cpabe {
 		keyCph = Bswabe.enc(pub, policy);
 		cph = keyCph.cph;
 		m = keyCph.key;
-		System.err.println("m = " + m.toString());
 
 		if (cph == null) {
-			System.out.println("Error happed in enc");
-			System.exit(0);
+			throw new CpabeException("Encryption error: m = " + m);
 		}
 
 		cphBuf = SerializeUtils.bswabeCphSerialize(cph);
@@ -124,8 +122,7 @@ public class Cpabe {
 			plt = AESCoder.decrypt(beb.e.toBytes(), aesBuf);
 			Common.spitFile(decfile, plt);
 		} else {
-			System.exit(0);
+			throw new CpabeException("Decryption error: e = " + beb.e);
 		}
 	}
-
 }
