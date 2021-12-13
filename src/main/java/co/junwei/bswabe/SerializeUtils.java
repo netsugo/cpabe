@@ -1,10 +1,10 @@
 package co.junwei.bswabe;
 
-import it.unisa.dia.gas.jpbc.CurveParameters;
 import it.unisa.dia.gas.jpbc.Element;
 import it.unisa.dia.gas.jpbc.Pairing;
-import it.unisa.dia.gas.plaf.jpbc.pairing.DefaultCurveParameters;
+import it.unisa.dia.gas.jpbc.PairingParameters;
 import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
+import it.unisa.dia.gas.plaf.jpbc.pairing.parameters.PropertiesParameters;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
@@ -42,76 +42,76 @@ public class SerializeUtils {
 
 	/*
 	 * Usage:
-	 * 
+	 *
 	 * StringBuffer sb = new StringBuffer("");
-	 * 
+	 *
 	 * offset = unserializeString(arr, offset, sb);
-	 * 
+	 *
 	 * String str = sb.substring(0);
 	 */
 	public static int unserializeString(byte[] arr, int offset, StringBuffer sb) {
 		int i;
 		int len;
 		byte[] str_byte;
-	
+
 		len = unserializeUint32(arr, offset);
 		offset += 4;
 		str_byte = new byte[len];
 		for (i = 0; i < len; i++)
 			str_byte[i] = arr[offset + i];
-	
+
 		sb.append(new String(str_byte));
 		return offset + len;
 	}
 
 	public static byte[] serializeBswabePub(BswabePub pub) {
 		ArrayList<Byte> arrlist = new ArrayList<Byte>();
-	
+
 		serializeString(arrlist, pub.pairingDesc);
 		serializeElement(arrlist, pub.g);
 		serializeElement(arrlist, pub.h);
 		serializeElement(arrlist, pub.gp);
 		serializeElement(arrlist, pub.g_hat_alpha);
-	
+
 		return Byte_arr2byte_arr(arrlist);
 	}
 
 	public static BswabePub unserializeBswabePub(byte[] b) {
 		BswabePub pub;
 		int offset;
-	
+
 		pub = new BswabePub();
 		offset = 0;
-	
+
 		StringBuffer sb = new StringBuffer("");
 		offset = unserializeString(b, offset, sb);
 		pub.pairingDesc = sb.substring(0);
-	
-		CurveParameters params = new DefaultCurveParameters()
+
+        PairingParameters params = new PropertiesParameters()
 				.load(new ByteArrayInputStream(pub.pairingDesc.getBytes()));
 		pub.p = PairingFactory.getPairing(params);
 		Pairing pairing = pub.p;
-	
+
 		pub.g = pairing.getG1().newElement();
 		pub.h = pairing.getG1().newElement();
 		pub.gp = pairing.getG2().newElement();
 		pub.g_hat_alpha = pairing.getGT().newElement();
-	
+
 		offset = unserializeElement(b, offset, pub.g);
 		offset = unserializeElement(b, offset, pub.h);
 		offset = unserializeElement(b, offset, pub.gp);
 		offset = unserializeElement(b, offset, pub.g_hat_alpha);
-	
+
 		return pub;
 	}
 
 	/* Method has been test okay */
 	public static byte[] serializeBswabeMsk(BswabeMsk msk) {
 		ArrayList<Byte> arrlist = new ArrayList<Byte>();
-	
+
 		serializeElement(arrlist, msk.beta);
 		serializeElement(arrlist, msk.g_alpha);
-	
+
 		return Byte_arr2byte_arr(arrlist);
 	}
 
@@ -119,13 +119,13 @@ public class SerializeUtils {
 	public static BswabeMsk unserializeBswabeMsk(BswabePub pub, byte[] b) {
 		int offset = 0;
 		BswabeMsk msk = new BswabeMsk();
-	
+
 		msk.beta = pub.p.getZr().newElement();
 		msk.g_alpha = pub.p.getG2().newElement();
-	
+
 		offset = unserializeElement(b, offset, msk.beta);
 		offset = unserializeElement(b, offset, msk.g_alpha);
-	
+
 		return msk;
 	}
 
@@ -133,18 +133,18 @@ public class SerializeUtils {
 	public static byte[] serializeBswabePrv(BswabePrv prv) {
 		ArrayList<Byte> arrlist;
 		int prvCompsLen, i;
-	
+
 		arrlist = new ArrayList<Byte>();
 		prvCompsLen = prv.comps.size();
 		serializeElement(arrlist, prv.d);
 		serializeUint32(arrlist, prvCompsLen);
-	
+
 		for (i = 0; i < prvCompsLen; i++) {
 			serializeString(arrlist, prv.comps.get(i).attr);
 			serializeElement(arrlist, prv.comps.get(i).d);
 			serializeElement(arrlist, prv.comps.get(i).dp);
 		}
-	
+
 		return Byte_arr2byte_arr(arrlist);
 	}
 
@@ -152,33 +152,33 @@ public class SerializeUtils {
 	public static BswabePrv unserializeBswabePrv(BswabePub pub, byte[] b) {
 		BswabePrv prv;
 		int i, offset, len;
-	
+
 		prv = new BswabePrv();
 		offset = 0;
-	
+
 		prv.d = pub.p.getG2().newElement();
 		offset = unserializeElement(b, offset, prv.d);
-	
+
 		prv.comps = new ArrayList<BswabePrvComp>();
 		len = unserializeUint32(b, offset);
 		offset += 4;
-	
+
 		for (i = 0; i < len; i++) {
 			BswabePrvComp c = new BswabePrvComp();
-	
+
 			StringBuffer sb = new StringBuffer("");
 			offset = unserializeString(b, offset, sb);
 			c.attr = sb.substring(0);
-	
+
 			c.d = pub.p.getG2().newElement();
 			c.dp = pub.p.getG2().newElement();
-	
+
 			offset = unserializeElement(b, offset, c.d);
 			offset = unserializeElement(b, offset, c.dp);
-	
+
 			prv.comps.add(c);
 		}
-	
+
 		return prv;
 	}
 
@@ -214,7 +214,7 @@ public class SerializeUtils {
 	private static void serializeUint32(ArrayList<Byte> arrlist, int k) {
 		int i;
 		byte b;
-	
+
 		for (i = 3; i >= 0; i--) {
 			b = (byte) ((k & (0x000000ff << (i * 8))) >> (i * 8));
 			arrlist.add(Byte.valueOf(b));
@@ -223,14 +223,14 @@ public class SerializeUtils {
 
 	/*
 	 * Usage:
-	 * 
+	 *
 	 * You have to do offset+=4 after call this method
 	 */
 	/* Method has been test okay */
 	private static int unserializeUint32(byte[] arr, int offset) {
 		int i;
 		int r = 0;
-	
+
 		for (i = 3; i >= 0; i--)
 			r |= (byte2int(arr[offset++])) << (i * 8);
 		return r;
@@ -238,7 +238,7 @@ public class SerializeUtils {
 
 	private static void serializePolicy(ArrayList<Byte> arrlist, BswabePolicy p) {
 		serializeUint32(arrlist, p.k);
-	
+
 		if (p.children == null || p.children.length == 0) {
 			serializeUint32(arrlist, 0);
 			serializeString(arrlist, p.attr);
@@ -259,20 +259,20 @@ public class SerializeUtils {
 		p.k = unserializeUint32(arr, offset[0]);
 		offset[0] += 4;
 		p.attr = null;
-	
+
 		/* children */
 		n = unserializeUint32(arr, offset[0]);
 		offset[0] += 4;
 		if (n == 0) {
 			p.children = null;
-	
+
 			StringBuffer sb = new StringBuffer("");
 			offset[0] = unserializeString(arr, offset[0], sb);
 			p.attr = sb.substring(0);
-	
+
 			p.c = pub.p.getG1().newElement();
 			p.cp = pub.p.getG1().newElement();
-	
+
 			offset[0] = unserializeElement(arr, offset[0], p.c);
 			offset[0] = unserializeElement(arr, offset[0], p.cp);
 		} else {
@@ -280,7 +280,7 @@ public class SerializeUtils {
 			for (i = 0; i < n; i++)
 				p.children[i] = unserializePolicy(pub, arr, offset);
 		}
-	
+
 		return p;
 	}
 
@@ -299,10 +299,10 @@ public class SerializeUtils {
 	private static byte[] Byte_arr2byte_arr(ArrayList<Byte> B) {
 		int len = B.size();
 		byte[] b = new byte[len];
-	
+
 		for (int i = 0; i < len; i++)
 			b[i] = B.get(i).byteValue();
-	
+
 		return b;
 	}
 

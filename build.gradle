@@ -12,14 +12,13 @@ repositories {
     maven {
         url = uri('https://repo.maven.apache.org/maven2/')
     }
-    flatDir {
-        dirs 'lib'
+    maven {
+        url 'https://www.jitpack.io'
     }
 }
 
 dependencies {
-    implementation 'it.unisa.dia.gas:jpbc-api:1.2.1'
-    implementation 'it.unisa.dia.gas:jpbc-plaf:1.2.1'
+    implementation 'com.github.emilianobonassi:jpbc:2.0.0'
 }
 
 group = 'co.junwei.cpabe'
